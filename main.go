@@ -1,13 +1,10 @@
 package main
 
 import (
+	"awesomeProject/controllers/Game"
 	"awesomeProject/controllers/Movies"
 	"github.com/gin-gonic/gin"
 )
-
-// album represents data about a record album.
-
-// albums slice to seed record album data.
 
 func main() {
 
@@ -16,5 +13,6 @@ func main() {
 	router.GET("/movies/:id", Movies.GetMovie)
 	router.POST("/movies", Movies.CreateMovies)
 
+	router.GET("/", Game.SocketHandler)
 	router.Run("localhost:8080")
 }
