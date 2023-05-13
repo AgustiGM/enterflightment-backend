@@ -22,10 +22,12 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+var cnt = 0
 var uri string = "mongodb://127.0.0.1:27017/"
 
 func SocketHandler(c *gin.Context) {
 	//upgrade get request to websocket protocol
+	id, _ := strconv.Atoi(c.Param("id"))
 	var Repo, _ = data.NewMongoRepo(c, uri, "enterflight")
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
@@ -40,20 +42,21 @@ func SocketHandler(c *gin.Context) {
 			break
 		}
 		var match entities.Match
-
 		err = json.Unmarshal(message, &match)
 		if err != nil {
 			panic("Formatting error in JSON")
 		}
 
-		var cm, _ = Repo.GetMatchById(match.ID)
-		if cm.ID != match.ID {
-			Repo.AddMatch(match)
+		var cm, _ = Repo.GetMatchById(id)
+		cm.Board = match.Board
+		if cm.Turn == cm.User1 {
+			cm.Turn = cm.User2
 		} else {
-			match = cm
+			cm.Turn = cm.User1
 		}
+		Repo.Save(cm)
 
-		aux, err := json.Marshal(match)
+		aux, err := json.Marshal(cm)
 		err = ws.WriteMessage(mt, aux)
 		if err != nil {
 			fmt.Println(err)
@@ -66,12 +69,10 @@ func CreateMatch(c *gin.Context) {
 	var Repo, _ = data.NewMongoRepo(c, uri, "enterflight")
 	var newMatch entities.Match
 
-	// Call BindJSON to bind the received JSON to
-	// newAlbum.
 	if err := c.BindJSON(&newMatch); err != nil {
 		return
 	}
-	Repo.AddMatch(newMatch)
+	newMatch = Repo.AddMatch(newMatch)
 	c.IndentedJSON(http.StatusCreated, newMatch)
 }
 
@@ -89,6 +90,7 @@ func JoinMatch(c *gin.Context) {
 		currentMatch.User2 = joinMatch.User2
 		currentMatch.Board = "---------"
 		currentMatch.Turn = currentMatch.User1
+		Repo.Save(currentMatch)
 	} else {
 		panic("Todo")
 	}

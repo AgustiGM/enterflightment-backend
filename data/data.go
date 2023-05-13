@@ -71,14 +71,14 @@ func (repo MongoRepo) GetAllMatches() []entities.Match {
 
 func (repo MongoRepo) AddMatch(match entities.Match) entities.Match {
 	match.ID = rand.Int()
-
+	match.Board = "---------"
 	collection := repo.db.Collection("matches")
 	insertResult, err := collection.InsertOne(context.Background(), match)
 	if err != nil {
 		panic(err)
 	}
 
-	match.ID, _ = strconv.Atoi(insertResult.InsertedID.(primitive.ObjectID).Hex())
+	_, _ = strconv.Atoi(insertResult.InsertedID.(primitive.ObjectID).Hex())
 
 	return match
 }

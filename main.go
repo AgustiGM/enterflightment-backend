@@ -2,6 +2,7 @@ package main
 
 import (
 	"awesomeProject/controllers/Game"
+	"awesomeProject/controllers/GameWS"
 	"awesomeProject/controllers/Movies"
 	"awesomeProject/controllers/Songs"
 	"github.com/gin-contrib/cors"
@@ -11,6 +12,8 @@ import (
 func main() {
 
 	router := gin.Default()
+	hub := GameWS.NewGameRoomHub()
+	go hub.RunLobby()
 	router.GET("/movies", Movies.GetMovies)
 	router.GET("/movies/:id", Movies.GetMovie)
 	router.POST("/movies", Movies.CreateMovies)
@@ -18,7 +21,10 @@ func main() {
 	router.POST("/games", Game.CreateMatch)
 	router.POST("/games/:id", Game.JoinMatch)
 	router.GET("/games", Game.GetAllMatches)
-	router.GET("/", Game.SocketHandler)
+	router.GET("/games/:id",
+		func(c *gin.Context) {
+			GameWS.ServeWs(&hub, c.Writer, c.Request, c)
+		})
 
 	router.GET("/songs", Songs.GetSongs)
 	router.GET("/songs/playlist", Songs.GetPlaylist)
@@ -31,6 +37,5 @@ func main() {
 	router.Use(cors.Default())
 
 	router.Run("localhost:8080")
-	//go Movies.HttpServer("localhost:8082")
 
 }
