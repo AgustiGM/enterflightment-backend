@@ -39,7 +39,8 @@ var Upvotes UpvoteList
 var uri string = "mongodb://127.0.0.1:27017/"
 
 func GetSongs(c *gin.Context) {
-	result, err := data.GetAllSongs()
+	var Repo, _ = data.NewMongoRepo(c, uri, "enterflight")
+	result, err := Repo.GetAllSongs()
 	if err != nil {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "songs not found"})
 	} else {

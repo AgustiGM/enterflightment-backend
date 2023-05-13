@@ -24,8 +24,41 @@ func GetSongById(id string) (entities.Song, error) {
 	return entities.Song{}, nil
 }
 
-func GetAllSongs() ([]entities.Song, error) {
-	return songs, nil
+func (repo MongoRepo) GetAllSongs() ([]entities.Song, error) {
+	collection := repo.db.Collection("playlist")
+
+	var playlist []entities.Song
+	cur, err := collection.Find(context.Background(), bson.M{})
+	if err != nil {
+		// handle error
+	}
+	defer cur.Close(context.Background())
+
+	for cur.Next(context.Background()) {
+		var song entities.Song
+		err := cur.Decode(&song)
+		if err != nil {
+			// handle error
+		}
+		playlist = append(playlist, song)
+	}
+
+	var result []entities.Song
+	var songs2 = songs
+	for _, s := range songs2 {
+		found := false
+		for _, p := range playlist {
+			if s.ID == p.ID {
+				found = true
+			}
+		}
+		if !found {
+			fmt.Printf("----- Appending --- %s -----\n", s.ID)
+			result = append(result, s)
+		}
+	}
+
+	return result, nil
 }
 
 func (repo MongoRepo) GetPlaylist() ([]entities.Song, error) {
