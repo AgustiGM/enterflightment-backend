@@ -54,7 +54,7 @@ type Client struct {
 	send chan []byte
 }
 
-var uri string = "mongodb://127.0.0.1:27017/"
+var uri string = "mongodb://localhost:27017/"
 
 // readPump pumps messages from the websocket connection to the hub.
 //

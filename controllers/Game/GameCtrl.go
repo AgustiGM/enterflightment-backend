@@ -23,7 +23,7 @@ var upgrader = websocket.Upgrader{
 }
 
 var cnt = 0
-var uri string = "mongodb://127.0.0.1:27017/"
+var uri string = "mongodb://localhost:27017/"
 
 func SocketHandler(c *gin.Context) {
 	//upgrade get request to websocket protocol
