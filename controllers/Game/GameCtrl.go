@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"net/http"
-	"strconv"
 	"sync"
 )
 
@@ -27,7 +26,7 @@ var uri string = "mongodb://localhost:27017/"
 
 func SocketHandler(c *gin.Context) {
 	//upgrade get request to websocket protocol
-	id, _ := strconv.Atoi(c.Param("id"))
+	id := c.Param("id")
 	var Repo, _ = data.NewMongoRepo(c, uri, "enterflight")
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
@@ -79,7 +78,7 @@ func CreateMatch(c *gin.Context) {
 func JoinMatch(c *gin.Context) {
 	var joinMatch entities.Match
 	var Repo, _ = data.NewMongoRepo(c, uri, "enterflight")
-	id, _ := strconv.Atoi(c.Param("id"))
+	id := c.Param("id")
 
 	if err := c.BindJSON(&joinMatch); err != nil {
 		return

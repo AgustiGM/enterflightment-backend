@@ -9,13 +9,39 @@ import (
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
+
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Header("Access-Control-Allow-Methods", "POST,HEAD,PATCH, OPTIONS, GET, PUT")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	}
+}
 
 func main() {
 
 	router := gin.Default()
 	hub := GameWS.NewGameRoomHub()
 	go hub.RunLobby()
+
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:  []string{"*"},
+		AllowMethods:  []string{"PUT", "PATCH", "GET", "POST"},
+		AllowHeaders:  []string{"Origin", "Content-Type"},
+		ExposeHeaders: []string{"Content-Length"},
+		MaxAge:        12 * time.Hour,
+	}))
 	router.GET("/video/:id", ServeVideo)
 
 	router.GET("/movies", Movies.GetMovies)
@@ -38,8 +64,6 @@ func main() {
 
 	router.PUT("/songs/:id/upvotes", Songs.AddUpvote) //put upvote
 	router.PUT("/songs/:id", Songs.AddSong)           //put to playlist
-
-	router.Use(cors.Default())
 
 	router.Run("0.0.0.0:8080")
 

@@ -9,7 +9,7 @@ type Movie struct {
 }
 
 type Match struct {
-	ID       int    `json:"id"`
+	ID       string `json:"id"`
 	Name     string `json:"name"`
 	Password string `json:"password"`
 	User1    string `json:"user1"`

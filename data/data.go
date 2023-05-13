@@ -26,7 +26,7 @@ func (repo MongoRepo) GetSongById(id int) (entities.Song, error) {
 	return entities.Song{}, nil
 }
 
-func (repo MongoRepo) GetMatchById(id int) (entities.Match, error) {
+func (repo MongoRepo) GetMatchById(id string) (entities.Match, error) {
 	collection := repo.db.Collection("matches")
 
 	var match entities.Match
@@ -70,7 +70,8 @@ func (repo MongoRepo) GetAllMatches() []entities.Match {
 }
 
 func (repo MongoRepo) AddMatch(match entities.Match) entities.Match {
-	match.ID = rand.Int()
+	aux := rand.Int()
+	match.ID = strconv.Itoa(aux)
 	match.Board = "---------"
 	collection := repo.db.Collection("matches")
 	insertResult, err := collection.InsertOne(context.Background(), match)
