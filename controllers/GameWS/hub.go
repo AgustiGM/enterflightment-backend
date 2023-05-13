@@ -71,7 +71,12 @@ func (h *GameRoomHub) RunLobby() {
 	for {
 		select {
 		case client := <-h.register:
-			h.hubList[client.id].register <- &client.c
+			val, ok := h.hubList[client.id]
+			if !ok {
+				h.hubList[client.id].register <- &client.c
+			} else {
+				val.register <- &client.c
+			}
 		case client := <-h.unregister:
 			if _, ok := h.hubList[client.id]; ok {
 				delete(h.hubList, client.id)
@@ -80,7 +85,7 @@ func (h *GameRoomHub) RunLobby() {
 		case message := <-h.broadcast:
 			aux, _ := json.Marshal(message.newStatus)
 			select {
-			case message.c.send <- aux:
+			case message.c.hub.broadcast <- aux:
 			default:
 				close(message.c.send)
 				delete(h.hubList, message.id)

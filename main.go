@@ -12,8 +12,8 @@ import (
 func main() {
 
 	router := gin.Default()
-	hub := GameWS.NewHub()
-	go hub.Run()
+	hub := GameWS.NewGameRoomHub()
+	go hub.RunLobby()
 	router.GET("/movies", Movies.GetMovies)
 	router.GET("/movies/:id", Movies.GetMovie)
 	router.POST("/movies", Movies.CreateMovies)
@@ -23,7 +23,7 @@ func main() {
 	router.GET("/games", Game.GetAllMatches)
 	router.GET("/games/:id",
 		func(c *gin.Context) {
-			GameWS.ServeWs(&hub, c.Writer, c.Request)
+			GameWS.ServeWs(&hub, c.Writer, c.Request, c)
 		})
 
 	router.GET("/songs", Songs.GetSongs)

@@ -6,10 +6,12 @@ package GameWS
 
 import (
 	"awesomeProject/entities"
-	"bytes"
 	"encoding/json"
+	"fmt"
+	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -26,7 +28,7 @@ const (
 	pingPeriod = (pongWait * 9) / 10
 
 	// Maximum message size allowed from peer.
-	maxMessageSize = 512
+	maxMessageSize = 1024
 )
 
 var (
@@ -76,7 +78,8 @@ func (c *Client) readPump() {
 		if err != nil {
 			panic("Formatting error in JSON")
 		}
-		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
+
+		message, _ = json.Marshal(match)
 		c.hub.broadcast <- message
 	}
 }
@@ -107,6 +110,7 @@ func (c *Client) writePump() {
 				return
 			}
 			w.Write(message)
+			fmt.Println("escric")
 
 			// Add queued chat messages to the current websocket message.
 			n := len(c.send)
@@ -128,14 +132,30 @@ func (c *Client) writePump() {
 }
 
 // ServeWs handles websocket requests from the peer.
-func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
+func ServeWs(gameRoomHub *GameRoomHub, w http.ResponseWriter, r *http.Request, ctx *gin.Context) {
 	conn, err := upgrader.Upgrade(w, r, nil)
+
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
-	client.hub.register <- client
+
+	id, _ := strconv.Atoi(ctx.Param("id"))
+	val, ok := gameRoomHub.hubList[id]
+	var client *Client
+	if !ok {
+		hub := NewHub()
+		go hub.Run()
+		client = &Client{hub: &hub, conn: conn, send: make(chan []byte, 512)}
+		gameRoomHub.hubList[id] = hub
+		client.hub.register <- client
+	} else {
+
+		client = &Client{hub: &val, conn: conn, send: make(chan []byte, 512)}
+		gameRoomHub.hubList[id].register <- client
+	}
+	//var gameRoom = GameRoomRegister{c: *client, id: id}
+	//gameRoomHub.register <- &gameRoom
 
 	// Allow collection of memory referenced by the caller by doing all work in
 	// new goroutines.
