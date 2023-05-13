@@ -5,9 +5,10 @@
 package GameWS
 
 import (
+	"awesomeProject/data"
 	"awesomeProject/entities"
+	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -45,12 +46,15 @@ var upgrader = websocket.Upgrader{
 type Client struct {
 	hub *Hub
 
+	user string
 	// The websocket connection.
 	conn *websocket.Conn
 
 	// Buffered channel of outbound messages.
 	send chan []byte
 }
+
+var uri string = "mongodb://127.0.0.1:27017/"
 
 // readPump pumps messages from the websocket connection to the hub.
 //
@@ -66,6 +70,7 @@ func (c *Client) readPump() {
 	c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
+		var Repo, _ = data.NewMongoRepo(context.TODO(), uri, "enterflight")
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
@@ -75,11 +80,30 @@ func (c *Client) readPump() {
 		}
 		var match entities.Match
 		err = json.Unmarshal(message, &match)
+		currentState, _ := Repo.GetMatchById(match.ID)
+		// check if it's first user
+		if currentState.User2 == "" && currentState.User1 != c.user {
+			currentState.User2 = c.user
+			currentState.Turn = currentState.User1
+			Repo.Save(currentState)
+		} else if currentState.Turn == c.user {
+			if currentState.User1 == c.user {
+				currentState.Turn = currentState.User2
+
+			} else {
+				currentState.Turn = currentState.User1
+			}
+			currentState.Board = match.Board
+			Repo.Save(currentState)
+		} else {
+			panic("Wrong turn")
+		}
+
 		if err != nil {
 			panic("Formatting error in JSON")
 		}
 
-		message, _ = json.Marshal(match)
+		message, _ = json.Marshal(currentState)
 		c.hub.broadcast <- message
 	}
 }
@@ -110,7 +134,6 @@ func (c *Client) writePump() {
 				return
 			}
 			w.Write(message)
-			fmt.Println("escric")
 
 			// Add queued chat messages to the current websocket message.
 			n := len(c.send)
@@ -141,24 +164,22 @@ func ServeWs(gameRoomHub *GameRoomHub, w http.ResponseWriter, r *http.Request, c
 	}
 
 	id, _ := strconv.Atoi(ctx.Param("id"))
+	username := ctx.Query("username")
 	val, ok := gameRoomHub.hubList[id]
+
 	var client *Client
+
 	if !ok {
 		hub := NewHub()
 		go hub.Run()
-		client = &Client{hub: &hub, conn: conn, send: make(chan []byte, 512)}
+		client = &Client{hub: &hub, user: username, conn: conn, send: make(chan []byte, 512)}
 		gameRoomHub.hubList[id] = hub
 		client.hub.register <- client
 	} else {
-
-		client = &Client{hub: &val, conn: conn, send: make(chan []byte, 512)}
+		client = &Client{hub: &val, user: username, conn: conn, send: make(chan []byte, 512)}
 		gameRoomHub.hubList[id].register <- client
 	}
-	//var gameRoom = GameRoomRegister{c: *client, id: id}
-	//gameRoomHub.register <- &gameRoom
 
-	// Allow collection of memory referenced by the caller by doing all work in
-	// new goroutines.
 	go client.writePump()
 	go client.readPump()
 }

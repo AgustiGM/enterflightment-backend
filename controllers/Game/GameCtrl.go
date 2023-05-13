@@ -72,7 +72,7 @@ func CreateMatch(c *gin.Context) {
 	if err := c.BindJSON(&newMatch); err != nil {
 		return
 	}
-	Repo.AddMatch(newMatch)
+	newMatch = Repo.AddMatch(newMatch)
 	c.IndentedJSON(http.StatusCreated, newMatch)
 }
 
@@ -90,6 +90,7 @@ func JoinMatch(c *gin.Context) {
 		currentMatch.User2 = joinMatch.User2
 		currentMatch.Board = "---------"
 		currentMatch.Turn = currentMatch.User1
+		Repo.Save(currentMatch)
 	} else {
 		panic("Todo")
 	}

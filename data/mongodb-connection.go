@@ -51,8 +51,9 @@ func (repo MongoRepo) Close(ctx context.Context) error {
 func (repo MongoRepo) Save(cm entities.Match) {
 	collection := repo.db.Collection("matches")
 	filter := bson.D{{"id", cm.ID}}
-	update := bson.D{{"$set", bson.D{{"board", cm.Board}}}}
-	update = bson.D{{"$set", bson.D{{"turn", cm.Board}}}}
+	update := bson.D{{"$set", bson.D{{"board", cm.Board}, {"user2", cm.User2}, {"turn", cm.Turn}}}}
+	//update = bson.D{{"$set", bson.D{{"user2", cm.User2}}}}
+	//update = bson.D{{"$set", bson.D{{"turn", cm.Turn}}}}
 	_, err := collection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		panic(err)
