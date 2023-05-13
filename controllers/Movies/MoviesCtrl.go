@@ -3,6 +3,7 @@ package Movies
 import (
 	"awesomeProject/entities"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -39,4 +40,22 @@ func CreateMovies(c *gin.Context) {
 	// Add the new album to the slice.
 	movies = append(movies, newMovie)
 	c.IndentedJSON(http.StatusCreated, newMovie)
+}
+
+func ServeVideo(c *gin.Context) {
+	videoId := c.Param("id")
+	videoPath := "resources"
+	if videoId == "1" {
+		videoPath += "/video1.mp4"
+	} else {
+		videoPath += "/Video.mp4"
+	}
+
+	videoData, err := ioutil.ReadFile(videoPath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read video file"})
+		return
+	}
+
+	c.Data(http.StatusOK, "video/mp4", videoData)
 }
