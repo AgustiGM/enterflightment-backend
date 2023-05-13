@@ -9,7 +9,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-
 func main() {
 
 	router := gin.Default()
@@ -22,18 +21,14 @@ func main() {
 	router.GET("/games", Game.GetAllMatches)
 	router.GET("/", Game.SocketHandler)
 
-
 	router.GET("/songs", Songs.GetSongs)
 	router.GET("/songs/:id", Songs.GetSong)
 	router.PUT("/songs/:id", Songs.AddSong)
-	router.GET("/songs/:id/upvote", Songs.UpvoteSong)
+	router.PUT("/songs/:id/upvote", Songs.UpvoteSong)
 
 	router.Use(cors.Default())
-
 
 	router.Run("localhost:8080")
 	//go Movies.HttpServer("localhost:8082")
 
 }
-
-

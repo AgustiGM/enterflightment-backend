@@ -6,13 +6,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type MongoMatchRepo struct {
+type MongoRepo struct {
 	Counter int
 	client  *mongo.Client
 	db      *mongo.Database
 }
 
-func NewMongoMatchRepo(ctx context.Context, connectionString string, dbName string) (MongoMatchRepo, error) {
+func NewMongoRepo(ctx context.Context, connectionString string, dbName string) (MongoRepo, error) {
 	//clientOptions := options.Client().ApplyURI(connectionString)
 	//client, err := mongo.Connect(ctx, clientOptions)
 	//if err != nil {
@@ -36,12 +36,12 @@ func NewMongoMatchRepo(ctx context.Context, connectionString string, dbName stri
 
 	db := client.Database(dbName)
 
-	return MongoMatchRepo{
+	return MongoRepo{
 		client: client,
 		db:     db,
 	}, nil
 }
 
-func (repo MongoMatchRepo) Close(ctx context.Context) error {
+func (repo MongoRepo) Close(ctx context.Context) error {
 	return repo.client.Disconnect(ctx)
 }

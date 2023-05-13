@@ -26,7 +26,7 @@ var uri string = "mongodb://127.0.0.1:27017/"
 
 func SocketHandler(c *gin.Context) {
 	//upgrade get request to websocket protocol
-	var Repo, _ = data.NewMongoMatchRepo(c, uri, "enterflight")
+	var Repo, _ = data.NewMongoRepo(c, uri, "enterflight")
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		fmt.Println(err)
@@ -63,7 +63,7 @@ func SocketHandler(c *gin.Context) {
 }
 
 func CreateMatch(c *gin.Context) {
-	var Repo, _ = data.NewMongoMatchRepo(c, uri, "enterflight")
+	var Repo, _ = data.NewMongoRepo(c, uri, "enterflight")
 	var newMatch entities.Match
 
 	// Call BindJSON to bind the received JSON to
@@ -77,7 +77,7 @@ func CreateMatch(c *gin.Context) {
 
 func JoinMatch(c *gin.Context) {
 	var joinMatch entities.Match
-	var Repo, _ = data.NewMongoMatchRepo(c, uri, "enterflight")
+	var Repo, _ = data.NewMongoRepo(c, uri, "enterflight")
 	id, _ := strconv.Atoi(c.Param("id"))
 
 	if err := c.BindJSON(&joinMatch); err != nil {
@@ -99,7 +99,7 @@ func JoinMatch(c *gin.Context) {
 }
 
 func GetAllMatches(c *gin.Context) {
-	var Repo, _ = data.NewMongoMatchRepo(c, uri, "enterflight")
+	var Repo, _ = data.NewMongoRepo(c, uri, "enterflight")
 	var list []entities.Match = Repo.GetAllMatches()
 	c.IndentedJSON(http.StatusOK, list)
 }

@@ -259,12 +259,5 @@ func UpvoteSong(c *gin.Context) {
 	Upvotes.Userslist = append(Upvotes.Userslist, user)
 	Upvotes.Upvotelist[upvoteIndex]++
 
-	//for i, s := range songs {
-	//	if s.ID == id {
-	//		songs[i].Upvotes++
-	//		c.IndentedJSON(http.StatusOK, songs[i])
-	//		return
-	//	}
-	//}
 	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "movie not found"})
 }
