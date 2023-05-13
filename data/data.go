@@ -16,12 +16,6 @@ type MatchRepo interface {
 	AddMatch(game entities.Match)
 }
 
-type SongRepo interface {
-	GetSongById(id int)
-	GetAllSongs()
-	AddUpvoteSong(song entities.Song)
-}
-
 type InMemoryMatchRepo struct {
 	Counter  int
 	GameList []entities.Match

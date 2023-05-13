@@ -27,3 +27,9 @@ type Song struct {
 	Year    string  `json:"year"`
 	Content string
 }
+
+type Upvote struct {
+	ID      string `json:"id" bson:"_id"`
+	SongID  string `json:"songid" bson:"_songid"`
+	Upvotes int    `json:"upvotes" bson:"upvotes"`
+}

@@ -6,7 +6,6 @@ import (
 	"awesomeProject/controllers/Songs"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	_ "github.com/go-sql-driver/mysql"
 )
 
 func main() {
@@ -22,9 +21,12 @@ func main() {
 	router.GET("/", Game.SocketHandler)
 
 	router.GET("/songs", Songs.GetSongs)
+	router.GET("/songs/playlist", Songs.GetPlaylist)
 	router.GET("/songs/:id", Songs.GetSong)
-	router.PUT("/songs/:id", Songs.AddSong)
-	router.PUT("/songs/:id/upvote", Songs.UpvoteSong)
+	router.GET("/songs/upvotes", Songs.GetUpvotes)
+
+	router.PUT("/songs/:id/upvotes", Songs.AddUpvote) //put upvote
+	router.PUT("/songs/:id", Songs.AddSong)           //put to playlist
 
 	router.Use(cors.Default())
 
