@@ -36,11 +36,12 @@ func main() {
 	go hub.RunLobby()
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:  []string{"*"},
-		AllowMethods:  []string{"PUT", "PATCH", "GET", "POST"},
-		AllowHeaders:  []string{"Origin", "Content-Type"},
-		ExposeHeaders: []string{"Content-Length"},
-		MaxAge:        12 * time.Hour,
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"PUT", "PATCH", "GET", "POST"},
+		AllowHeaders:     []string{"Origin", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length"},
+		MaxAge:           12 * time.Hour,
+		AllowCredentials: true,
 	}))
 	router.GET("/video/:id", ServeVideo)
 
@@ -52,6 +53,10 @@ func main() {
 	router.POST("/games/:id", Game.JoinMatch)
 	router.GET("/games", Game.GetAllMatches)
 	router.GET("/games/:id",
+		func(c *gin.Context) {
+			GameWS.ServeWs(&hub, c.Writer, c.Request, c)
+		})
+	router.GET("/games/:id/info",
 		func(c *gin.Context) {
 			GameWS.ServeWs(&hub, c.Writer, c.Request, c)
 		})

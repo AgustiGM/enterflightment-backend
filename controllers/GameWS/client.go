@@ -40,6 +40,9 @@ var (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
 }
 
 // Client is a middleman between the websocket connection and the hub.
@@ -96,7 +99,7 @@ func (c *Client) readPump() {
 			currentState.Board = match.Board
 			Repo.Save(currentState)
 		} else {
-			panic("Wrong turn")
+
 		}
 
 		if err != nil {
@@ -165,6 +168,10 @@ func ServeWs(gameRoomHub *GameRoomHub, w http.ResponseWriter, r *http.Request, c
 
 	id, _ := strconv.Atoi(ctx.Param("id"))
 	username := ctx.Query("username")
+	username1 := ctx.Query("t")
+	if username == "" {
+		username = username1
+	}
 	val, ok := gameRoomHub.hubList[id]
 
 	var client *Client
