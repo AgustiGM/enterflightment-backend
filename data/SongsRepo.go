@@ -13,6 +13,7 @@ type SongRepo interface {
 	AddUpvoteSong(song entities.Song)
 	GetUpvotes()
 	AddUpvote(id string)
+	EmptyPlaylist()
 }
 
 func GetSongById(id string) (entities.Song, error) {
@@ -374,5 +375,11 @@ func (repo MongoRepo) AddUpvote(id string) error {
 	updateResult, err := collection.UpdateOne(context.Background(), filter, update)
 	fmt.Println(updateResult)
 
+	return err
+}
+
+func (repo MongoRepo) EmptyPlaylist() error {
+	collection := repo.db.Collection("playlist")
+	_, err := collection.DeleteMany(context.Background(), bson.M{})
 	return err
 }

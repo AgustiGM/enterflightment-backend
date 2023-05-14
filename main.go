@@ -63,7 +63,9 @@ func main() {
 	router.GET("/songs/:id/file", ServeSong)
 
 	router.PUT("/songs/:id/upvotes", Songs.AddUpvote) //put upvote
-	router.PUT("/songs/:id", Songs.AddSong)           //put to playlist
+	router.PUT("/songs/:id", Songs.AddSong)
+
+	router.DELETE("/songs/playlist", Songs.EmptyPlaylist) //put to playlist
 
 	router.Run("0.0.0.0:8080")
 
