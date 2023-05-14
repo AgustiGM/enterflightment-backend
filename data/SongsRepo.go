@@ -15,6 +15,7 @@ type SongRepo interface {
 	GetUpvotes()
 	AddUpvote(id string)
 	EmptyPlaylist()
+	PrepareNextSong()
 }
 
 func GetSongById(id string) (entities.Song, error) {
@@ -55,7 +56,6 @@ func (repo MongoRepo) GetAllSongs() ([]entities.Song, error) {
 			}
 		}
 		if !found {
-			fmt.Printf("----- Appending --- %s -----\n", s.ID)
 			result = append(result, s)
 		}
 	}
@@ -105,7 +105,6 @@ func (repo MongoRepo) GetPlaylist() ([]entities.Song, error) {
 	if err := cur.Err(); err != nil {
 		// handle error
 	}
-	fmt.Println(playlist)
 	return solution, nil
 }
 func findUpvote(songID string, upvotes []entities.Upvote) entities.Upvote {
@@ -156,7 +155,6 @@ func (repo MongoRepo) AddSongToPlaylist(id string) ([]entities.Song, error) {
 		panic(err)
 	}
 
-	fmt.Println(append(playlist, newSong))
 	return append(playlist, newSong), err
 }
 
@@ -411,4 +409,31 @@ func (repo MongoRepo) EmptyPlaylist() error {
 	collection := repo.db.Collection("playlist")
 	_, err := collection.DeleteMany(context.Background(), bson.M{})
 	return err
+}
+
+func (repo MongoRepo) PrepareNextSong() (error, error) {
+	collection := repo.db.Collection("playlist")
+
+	var playlist []entities.Song
+	cur, err := collection.Find(context.Background(), bson.M{})
+	if err != nil {
+		// handle error
+	}
+	defer cur.Close(context.Background())
+
+	for cur.Next(context.Background()) {
+		var song entities.Song
+		err := cur.Decode(&song)
+		if err != nil {
+			// handle error
+		}
+		playlist = append(playlist, song)
+	}
+
+	_, err2 := collection.DeleteOne(context.Background(), bson.M{"_songid": playlist[0].ID})
+
+	collection2 := repo.db.Collection("upvotes")
+	_, err3 := collection2.DeleteMany(context.Background(), bson.M{})
+
+	return err2, err3
 }
