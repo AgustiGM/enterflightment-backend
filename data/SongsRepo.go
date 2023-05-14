@@ -81,9 +81,24 @@ func (repo MongoRepo) GetPlaylist() ([]entities.Song, error) {
 		}
 		playlist = append(playlist, song)
 	}
+	//-------------------playlist-------------------
 
-	upvotes, _ := repo.GetUpvotes()
-	songs2 := songs
+	collection2 := repo.db.Collection("upvotes")
+	//converter la collection en upvotes
+	var upvotes []entities.Upvote
+	cur2, _ := collection2.Find(context.Background(), bson.M{})
+	defer cur2.Close(context.Background())
+	for cur.Next(context.Background()) {
+		var upvote entities.Upvote
+		err := cur.Decode(&upvote)
+		if err != nil {
+			// handle error
+		}
+		upvotes = append(upvotes, upvote)
+	}
+	//-----------upvotes----------------
+
+	songs2 := playlist
 	sort.Slice(songs2, func(i, j int) bool {
 		songID1 := songs2[i].ID
 		songID2 := songs2[j].ID
@@ -105,7 +120,7 @@ func (repo MongoRepo) GetPlaylist() ([]entities.Song, error) {
 	if err := cur.Err(); err != nil {
 		// handle error
 	}
-	return solution, nil
+	return songs2, err
 }
 func findUpvote(songID string, upvotes []entities.Upvote) entities.Upvote {
 	for _, upvote := range upvotes {
@@ -429,11 +444,12 @@ func (repo MongoRepo) PrepareNextSong() (error, error) {
 		}
 		playlist = append(playlist, song)
 	}
-
-	_, err2 := collection.DeleteOne(context.Background(), bson.M{"_songid": playlist[0].ID})
+	if len(playlist) > 0 {
+		collection.DeleteOne(context.Background(), bson.M{"_songid": playlist[0].ID})
+	}
 
 	collection2 := repo.db.Collection("upvotes")
 	_, err3 := collection2.DeleteMany(context.Background(), bson.M{})
 
-	return err2, err3
+	return nil, err3
 }
