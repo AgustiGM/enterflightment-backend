@@ -444,7 +444,7 @@ func (repo MongoRepo) PrepareNextSong() (error, error) {
 		}
 		playlist = append(playlist, song)
 	}
-	if len(playlist) > 0 {
+	if len(playlist) > 3 {
 		collection.DeleteOne(context.Background(), bson.M{"_songid": playlist[0].ID})
 	}
 
