@@ -19,7 +19,7 @@ type Match struct {
 }
 
 type Song struct {
-	ID      string  `json:"id"`
+	ID      string  `json:"id" bson:"_songid"`
 	Title   string  `json:"title"`
 	Artist  string  `json:"artist"`
 	Album   string  `json:"album"`

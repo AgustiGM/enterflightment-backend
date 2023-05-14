@@ -112,3 +112,13 @@ func EmptyPlaylist(c *gin.Context) {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Playlist not emptied"})
 	}
 }
+
+func PrepareNextSong(c *gin.Context) {
+	var Repo, _ = data.NewMongoRepo(nil, uri, "enterflight")
+	err1, err2 := Repo.PrepareNextSong()
+	if err1 == nil && err2 == nil {
+		c.IndentedJSON(http.StatusOK, gin.H{"message": "next song ready"})
+	} else {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "something failed"})
+	}
+}

@@ -35,6 +35,7 @@ func main() {
 	router.GET("/songs/:id", Songs.GetSong)
 	router.GET("/songs/upvotes", Songs.GetUpvotes)
 	router.GET("/songs/:id/file", ServeSong)
+	router.GET("songs/next", Songs.PrepareNextSong)
 
 	router.PUT("/songs/:id/upvotes", Songs.AddUpvote) //put upvote
 	router.PUT("/songs/:id", Songs.AddSong)
