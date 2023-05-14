@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
+	"sort"
 )
 
 type SongRepo interface {
@@ -81,11 +82,39 @@ func (repo MongoRepo) GetPlaylist() ([]entities.Song, error) {
 		playlist = append(playlist, song)
 	}
 
+	upvotes, _ := repo.GetUpvotes()
+	songs2 := songs
+	sort.Slice(songs2, func(i, j int) bool {
+		songID1 := songs2[i].ID
+		songID2 := songs2[j].ID
+
+		// Finding upvote objects for the respective songs
+		upvote1 := findUpvote(songID1, upvotes)
+		upvote2 := findUpvote(songID2, upvotes)
+
+		// Comparing upvotes
+		return upvote1.Upvotes > upvote2.Upvotes
+	})
+
+	solution := []entities.Song{}
+	// Print sorted songs
+	for _, song := range songs2 {
+		solution = append(solution, song)
+	}
+
 	if err := cur.Err(); err != nil {
 		// handle error
 	}
 	fmt.Println(playlist)
-	return playlist, nil
+	return solution, nil
+}
+func findUpvote(songID string, upvotes []entities.Upvote) entities.Upvote {
+	for _, upvote := range upvotes {
+		if upvote.SongID == songID {
+			return upvote
+		}
+	}
+	return entities.Upvote{}
 }
 
 func (repo MongoRepo) AddSongToPlaylist(id string) ([]entities.Song, error) {
