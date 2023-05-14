@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"math/rand"
 	"strconv"
 )
 
@@ -20,9 +21,12 @@ type InMemoryMatchRepo struct {
 	GameList []entities.Match
 }
 
-var uri string = "mongodb://admin:1234@localhost:27017"
+func (repo MongoRepo) GetSongById(id int) (entities.Song, error) {
+	//collection := repo.db.Collection("upvotes")
+	return entities.Song{}, nil
+}
 
-func (repo MongoMatchRepo) GetMatchById(id int) (entities.Match, error) {
+func (repo MongoRepo) GetMatchById(id string) (entities.Match, error) {
 	collection := repo.db.Collection("matches")
 
 	var match entities.Match
@@ -39,7 +43,7 @@ func (repo MongoMatchRepo) GetMatchById(id int) (entities.Match, error) {
 	return match, nil
 }
 
-func (repo MongoMatchRepo) GetAllMatches() []entities.Match {
+func (repo MongoRepo) GetAllMatches() []entities.Match {
 	collection := repo.db.Collection("matches")
 
 	var matches []entities.Match
@@ -65,17 +69,17 @@ func (repo MongoMatchRepo) GetAllMatches() []entities.Match {
 	return matches
 }
 
-func (repo MongoMatchRepo) AddMatch(match entities.Match) entities.Match {
-	match.ID = repo.Counter
-	repo.Counter = repo.Counter + 1
-
+func (repo MongoRepo) AddMatch(match entities.Match) entities.Match {
+	aux := rand.Int()
+	match.ID = strconv.Itoa(aux)
+	match.Board = "---------"
 	collection := repo.db.Collection("matches")
 	insertResult, err := collection.InsertOne(context.Background(), match)
 	if err != nil {
 		panic(err)
 	}
 
-	match.ID, _ = strconv.Atoi(insertResult.InsertedID.(primitive.ObjectID).Hex())
+	_, _ = strconv.Atoi(insertResult.InsertedID.(primitive.ObjectID).Hex())
 
 	return match
 }

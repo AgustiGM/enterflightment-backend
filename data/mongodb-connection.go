@@ -1,18 +1,20 @@
 package data
 
 import (
+	"awesomeProject/entities"
 	"context"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type MongoMatchRepo struct {
+type MongoRepo struct {
 	Counter int
 	client  *mongo.Client
 	db      *mongo.Database
 }
 
-func NewMongoMatchRepo(ctx context.Context, connectionString string, dbName string) (MongoMatchRepo, error) {
+func NewMongoRepo(ctx context.Context, connectionString string, dbName string) (MongoRepo, error) {
 	//clientOptions := options.Client().ApplyURI(connectionString)
 	//client, err := mongo.Connect(ctx, clientOptions)
 	//if err != nil {
@@ -36,12 +38,25 @@ func NewMongoMatchRepo(ctx context.Context, connectionString string, dbName stri
 
 	db := client.Database(dbName)
 
-	return MongoMatchRepo{
+	return MongoRepo{
 		client: client,
 		db:     db,
 	}, nil
 }
 
-func (repo MongoMatchRepo) Close(ctx context.Context) error {
+func (repo MongoRepo) Close(ctx context.Context) error {
 	return repo.client.Disconnect(ctx)
+}
+
+func (repo MongoRepo) Save(cm entities.Match) {
+	collection := repo.db.Collection("matches")
+	filter := bson.D{{"id", cm.ID}}
+	update := bson.D{{"$set", bson.D{{"board", cm.Board}, {"user2", cm.User2}, {"turn", cm.Turn}}}}
+	//update = bson.D{{"$set", bson.D{{"user2", cm.User2}}}}
+	//update = bson.D{{"$set", bson.D{{"turn", cm.Turn}}}}
+	_, err := collection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		panic(err)
+	}
+
 }

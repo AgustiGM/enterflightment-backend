@@ -9,7 +9,7 @@ type Movie struct {
 }
 
 type Match struct {
-	ID       int    `json:"id"`
+	ID       string `json:"id"`
 	Name     string `json:"name"`
 	Password string `json:"password"`
 	User1    string `json:"user1"`
@@ -26,4 +26,10 @@ type Song struct {
 	Length  float64 `json:"length"`
 	Year    string  `json:"year"`
 	Content string
+}
+
+type Upvote struct {
+	ID      string `json:"id" bson:"_id"`
+	SongID  string `json:"songid" bson:"_songid"`
+	Upvotes int    `json:"upvotes" bson:"upvotes"`
 }
