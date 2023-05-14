@@ -73,6 +73,7 @@ func (repo MongoRepo) AddMatch(match entities.Match) entities.Match {
 	aux := rand.Int()
 	match.ID = strconv.Itoa(aux)
 	match.Board = "---------"
+	match.Turn = match.User1
 	collection := repo.db.Collection("matches")
 	insertResult, err := collection.InsertOne(context.Background(), match)
 	if err != nil {

@@ -98,7 +98,7 @@ func (repo MongoRepo) GetPlaylist() ([]entities.Song, error) {
 
 	solution := []entities.Song{}
 	// Print sorted songs
-	for _, song := range songs2 {
+	for _, song := range playlist {
 		solution = append(solution, song)
 	}
 
